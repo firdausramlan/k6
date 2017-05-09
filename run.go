@@ -224,7 +224,7 @@ func parseCollectorString(s string) (t, p string, err error) {
 	return parts[0], parts[1], nil
 }
 
-func makeCollector(s string, src *lib.SourceData, opts lib.Options) (lib.Collector, error) {
+func makeCollector(s string, src *lib.SourceData, opts lib.Options, version string) (lib.Collector, error) {
 	t, p, err := parseCollectorString(s)
 	if err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func makeCollector(s string, src *lib.SourceData, opts lib.Options) (lib.Collect
 	case "json":
 		return json.New(p, afero.NewOsFs(), opts)
 	case "cloud":
-		return cloud.New(p, src, opts)
+		return cloud.New(p, src, opts, version)
 	default:
 		return nil, errors.New("Unknown output type: " + t)
 	}
@@ -341,7 +341,7 @@ func actionRun(cc *cli.Context) error {
 	// Make the metric collector, if requested.
 	var collector lib.Collector
 	if out != "" {
-		c, err := makeCollector(out, src, opts)
+		c, err := makeCollector(out, src, opts, cc.App.Version)
 		if err != nil {
 			log.WithError(err).Error("Couldn't create output")
 			return err
